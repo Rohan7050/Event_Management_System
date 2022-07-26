@@ -104,3 +104,26 @@ module.exports.resetPassword = async function (req, res) {
     }
 }
 
+module.exports.getUserDetails = async function (req, res) { 
+    try {
+        const user = await userModel.findById(req.user.id)
+        return res.status(200).json({status: true, user})
+    } catch (err) { 
+        return res.status(500).json({status: false, message: err.message});
+    }
+}
+
+module.exports.updatePassword = async function (req, res) { 
+    const { oldPassword, newPassword, confirmPassword } = req.body
+    const user = await userModel.findById(req.user.id).select("+password");
+    const isPasswordMatched = await user.comparePassword(oldPassword);
+    if (!isPasswordMatched) {
+        return res.status(400).json({status: false, message: "Old password is incorrect"});
+    }
+    if (newPassword !== confirmPassword) {
+        return res.status(400).json({status: false, message: "password does not match"});
+    }
+    user.password = req.body.newPassword;
+    await user.save();
+    sendToken(user, 200, res);
+}
