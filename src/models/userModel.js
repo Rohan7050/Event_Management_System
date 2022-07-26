@@ -52,4 +52,24 @@ userSchema.methods.comparePassword = async function (password) {
     return isMatched
 }
 
+function makeRandomStr() {
+    const words = ['0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','-','_']
+    let id = ""
+    let length = Math.floor((Math.random() * 3) + 20)
+    for (let i = 0; i < length; i++){
+        let idx = Math.floor(Math.random() * words.length)
+        let letter = words[idx]
+        id = id + letter
+    }
+    return id
+}
+
+userSchema.methods.getResetPasswordToken = async function () {
+    const resetToken = makeRandomStr()
+    // Hashing and adding resetPasswordToken to userSchema
+    this.resetPasswordToken = resetToken
+    this.resetPasswordExpire = Date.now() + 15 * 60 * 1000;
+    return resetToken;
+};
+
 module.exports = mongoose.model("User", userSchema);
