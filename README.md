@@ -11,3 +11,6 @@ JWT_EXP=1d
 COOKIE_EXPIRE=1
 
 to start application run "npm run start" command in terminal shell
+
+use postman collection 
+"Event Management System.postman_collection.json"
