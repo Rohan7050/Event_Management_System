@@ -30,15 +30,15 @@ module.exports.createEvent = async function (req, res) {
 
 module.exports.invite = async function (req, res) {
     try {
-        const { evevntId } = req.params
+        const { eventId } = req.params
         const { inviteeId } = req.body
-        if (!isValidObjectId(evevntId)) {
-            return res.status(400).json({status: false, message: "Invalid evevntId"});
+        if (!isValidObjectId(eventId)) {
+            return res.status(400).json({status: false, message: "Invalid eventId"});
         }
         if (!isValidObjectId(inviteeId)) {
             return res.status(400).json({ status: false, message: "Invalid inviteeId" });
         }
-        const event = await eventModel.findById(evevntId);
+        const event = await eventModel.findById(eventId);
         if (!event) {
             return res.status(404).json({ status: false, message: "event no longer exists" });
         }
@@ -95,5 +95,45 @@ module.exports.list = async function (req, res) {
     }
 }
 
+module.exports.updateEvent = async function (req, res) {
+    try {
+        let { name, description, createdAt } = req.query;
+        const { eventId } = req.params;
+        const event = await eventModel.findById(eventId)
+        if (!event) {
+            return res.status(404).json({ status: false, message: "event no longer exists" });
+        }
+        if (event.createdBy.toString() !== req.user.id.toString()) {
+            return res.status(403).json({ status: false, message: "you are not allowed to invite others to this event" });
+        }
+        const update = {}
+        if (name) {
+            name = name.trim()
+            if (name) {
+                update.name = name.trim()
+            } 
+        }
+        if (description) {
+            description = description.trim()
+            if (description) {
+                update.description = description.trim()
+            }
+        }
+        if (createdAt) {
+            createdAt = createdAt.trim()
+            if (createdAt.match(/^\d{2}-\d{2}-\d{4}$/) === null) {
+                return res.status(400).json({ status: false, message: "please enter date in DD-MM-YYYY format" });
+            }
+            const b = createdAt.split("-").map(Number)
+            const date = new Date(b[2], b[1] - 1, b[0] + 1);
+            update.createdAt = date
+        }
+        // event.save()
+        const updatedevent = await eventModel.findByIdAndUpdate(eventId, update, { new: true })
+        return res.status(200).json({status: true, event: updatedevent});
+    } catch (err) { 
+        return res.status(500).json({status: false, message: err.message});
+    }
+}
 
 
