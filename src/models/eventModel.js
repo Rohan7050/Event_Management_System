@@ -5,8 +5,8 @@ const ObjectId = mongoose.Schema.Types.ObjectId
 const eventSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: true,
-        trim: [, "please enter event name"]
+        required: [true, "please enter event name"],
+        trim: true
     },
     description: {
         type: String,
