@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 module.exports.isValidObject = (data) => {
     if (Object.keys(data).length === 0){
         return false
