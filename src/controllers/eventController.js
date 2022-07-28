@@ -56,4 +56,44 @@ module.exports.invite = async function (req, res) {
         return res.status(500).json({status: false, message: err.message});
     }
 } 
+//new ObjectId('62e003f4a0eaad58b905e7d5')
+module.exports.list = async function (req, res) { 
+    try {
+        const sort = req.query.sort || 1
+        const resultPerPage = 5
+        const currentPage = Number(req.query.page) || 1
+        const skip = resultPerPage * (currentPage - 1)
+        // this.query = this.query.limit(resultPerPage).skip(skip)
+        const userId = req.user._id
+        const events = await eventModel.aggregate([{
+            '$unwind': {
+                'path': '$invitees'
+            }
+        }, {
+            '$match': {
+                'invitees.invitee': userId
+            }
+        }, {
+            '$project': {
+                'invitees': 0,
+                '__v': 0,
+                '_id': 0
+            }
+        }, {
+            '$limit': resultPerPage
+        }, {
+            '$skip': skip
+        }, {
+            '$sort': {
+                'createdAt': Number(sort)
+            }
+        }])
+        const createdEvent = await eventModel.find({ createdBy: userId }).limit(resultPerPage).skip(skip).sort({createdAt: Number(sort)}).select({ 'invitees': 0, '__v': 0, '_id': 0 })
+        return res.status(200).json({ status: true, invitations: events, createdEvent: createdEvent });
+    } catch (err) { 
+        return res.status(500).json({status: false, message: err.message});
+    }
+}
+
+
 
